@@ -15,7 +15,7 @@ app.use('/api/auth/', authRoutes )
 
 // Home Route
 app.get("/", (req, res)=>{
-    res.send("Hello World!")
+    res.status(200).json({message: `APP IS RUNNING, You are on ${req.host}`})
 })
 
 
