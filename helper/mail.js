@@ -12,13 +12,18 @@ const transporter = nodemailer.createTransport({
 })
 
 
-export const SendVerificationMail = async (user, token) =>{
+export const SendVerificationMail = async (userEmail, token) =>{
     const mailOptions = {
         from: process.env.SMTP_USER,
-        to: user,
+        to: userEmail,
         subject : "Account verification",
         text: "Please verify you account to access our website and services",
-        html: `<p>Click this link to verify your account. <a href=${process.env.HOST}/api/auth/verify-account?token=${token}>Click here</a></p>`
+        html: `<div>
+        Click this link to verify your account. <a href=${process.env.HOST}/api/auth/verify-account?token=${token}>Click here</a>
+
+        <br /> 
+        <p>Note : This email is only valid for 1 hour.</p>
+        </div>`
     }
 
     transporter.sendMail(mailOptions, (err)=>{
