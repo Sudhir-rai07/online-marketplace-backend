@@ -48,7 +48,6 @@ enum TokenType {
   PasswordReset
 }
 
-
 // Product Scchema
 model Product {
   id          String   @id @default(uuid())
@@ -79,20 +78,22 @@ enum Category {
   Furniture
 }
 
-
 // Order Schema
 model Order {
-  id            String        @id @default(uuid())
-  user          User          @relation(fields: [userId], references: [id])
-  userId        String        // Ordered By
-  product       Product       @relation(fields: [productId], references: [id])
-  productId     String
-  address       String
-  status        OrderStatus
-  paymentMethod PaymentMethod @default(UPI)
-  paymentStatus PaymentStatus @default(Pending)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id             String        @id @default(uuid())
+  user           User          @relation(fields: [userId], references: [id])
+  userId         String // Ordered By
+  product        Product       @relation(fields: [productId], references: [id])
+  productId      String
+  address        String
+  status         OrderStatus
+  quantity       Int           @default(1)
+  shippingCharge Float         @default(1)
+  total          Float
+  paymentMethod  PaymentMethod @default(UPI)
+  paymentStatus  PaymentStatus @default(Pending)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([userId])
 }
@@ -116,5 +117,3 @@ enum PaymentStatus {
   Failed
   Success
 }
-
-

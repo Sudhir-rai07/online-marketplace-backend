@@ -10,12 +10,12 @@ const PORT = process.env.PORT || 5500
 app.use(express.json())
 
 // routes middleware
-import authRoutes from './routes/routes.auth.js'
+import authRoutes from './routes/auth.js'
 app.use('/api/auth/', authRoutes )
 
 // Home Route
 app.get("/", (req, res)=>{
-    res.status(200).json({message: `APP IS RUNNING, You are on ${req.host}`})
+    res.status(200).json({message: `APP IS RUNNING, You are on ${req.hostname}`})
 })
 
 
