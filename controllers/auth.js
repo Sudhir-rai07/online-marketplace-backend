@@ -106,27 +106,30 @@ export const Login = async (req, res) => {
         // isVerified
         const isVerified = user.verified
         if (!isVerified) {
-            const verifyAccountToken = await prisma.token.create({data: {
-                userId: user.id,
-                token: await GenToken(),
-                type: "AccountVerification",
-                tokenExpires: new Date(Date.now() + (60 * 60 * 1000)) // Token expires in 1hr
-            }
-        })
+            const verifyAccountToken = await prisma.token.create({
+                data: {
+                    userId: user.id,
+                    token: await GenToken(),
+                    type: "AccountVerification",
+                    tokenExpires: new Date(Date.now() + (60 * 60 * 1000)) // Token expires in 1hr
+                }
+            })
 
             SendVerificationMail(user.email, verifyAccountToken.token)
             return res.status(200).json({ message: "A verification email has been sent to your registered email. Please verify" })
         }
 
+        const jwtToken = await GenerateJwtToken(user.id)
+
         // setCookie
-        res.cookie("auth-token", token, {
+        res.cookie("auth-token", jwtToken, {
             httpOnly: true, // prevents client side scripting
             secure: true, // ensures the cookie is sent over the HTTPs
             sameSite: 'strict', // Prevents cross site request forgery
             maxAge: 7 * 24 * 60 * 10 * 1000 // Cookie expires in 7 days
         })
         // sendTokenResponse
-        res.status(200).json({ token: token })
+        res.status(200).json({ token: jwtToken })
     } catch (error) {
         console.log("Error in Login controller ", error)
         sendErrorResponse(res, 500, "Internal server error")
@@ -170,6 +173,7 @@ export const VerifyAccount = async (req, res) => {
         })
 
         if (!user) return sendErrorResponse(res, 400, "User not found")
+
         // Update user.verified field
         await prisma.user.update({
             where: {
@@ -191,5 +195,41 @@ export const VerifyAccount = async (req, res) => {
     } catch (error) {
         console.log('Error in VerifyAccount controller ', error)
         sendErrorResponse(res, 500, "Internal server Error")
+    }
+}
+
+export const ChangePassword = async (req, res) => {
+    const userId = req.user
+    const { currentPassword, newPassword } = req.body
+    try {
+        // Returns error if both fields are missing
+        if (!currentPassword || !newPassword) return sendErrorResponse(res, 400, "Current password and New password is required")
+
+            // Double chack user
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        })
+        if (!user) return sendErrorResponse(res, 400, "User not found")
+
+            // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+        // Update old password with new passowrd
+        await prisma.user.update({
+            where: {
+                id: userId
+            }, data: {
+                password: hashedPassword
+            }
+        })
+
+        // send response
+        res.status(200).json({message: "Password changed"})
+
+    } catch (error) {
+        console.log("Error in ChangePassword controller ", error)
+        sendErrorResponse(res, 500, "Internal server error")
     }
 }

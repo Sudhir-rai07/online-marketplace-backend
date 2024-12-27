@@ -1,5 +1,7 @@
 import express from 'express'
 import dotenv from 'dotenv'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
 
 dotenv.config()
 
@@ -8,6 +10,8 @@ const PORT = process.env.PORT || 5500
 
 // Middlewares
 app.use(express.json())
+app.use(cookieParser())
+app.use(cors())
 
 // routes middleware
 import authRoutes from './routes/auth.js'
