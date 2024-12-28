@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs'
 import sendErrorResponse from "../helper/response.js"
 import { PrismaClient } from "@prisma/client"
 import GenToken, { GenerateJwtToken } from '../helper/generateToken.js'
-import { SendVerificationMail } from '../helper/mail.js'
+import { ConfirmPasswordReset, SendPasswordResetEmail, SendVerificationMail } from '../helper/mail.js'
 
 const prisma = new PrismaClient()
 
@@ -80,7 +80,6 @@ export const Register = async (req, res) => {
         sendErrorResponse(res, 500, "Internal Server Error")
     }
 }
-
 
 export const Login = async (req, res) => {
     const { email, password } = req.body
@@ -205,7 +204,7 @@ export const ChangePassword = async (req, res) => {
         // Returns error if both fields are missing
         if (!currentPassword || !newPassword) return sendErrorResponse(res, 400, "Current password and New password is required")
 
-            // Double chack user
+        // Double chack user
         const user = await prisma.user.findUnique({
             where: {
                 id: userId
@@ -213,7 +212,7 @@ export const ChangePassword = async (req, res) => {
         })
         if (!user) return sendErrorResponse(res, 400, "User not found")
 
-            // Hash new password
+        // Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 10)
 
         // Update old password with new passowrd
@@ -226,10 +225,94 @@ export const ChangePassword = async (req, res) => {
         })
 
         // send response
-        res.status(200).json({message: "Password changed"})
+        res.status(200).json({ message: "Password changed" })
 
     } catch (error) {
         console.log("Error in ChangePassword controller ", error)
+        sendErrorResponse(res, 500, "Internal server error")
+    }
+}
+
+export const ReqResetPassword = async (req, res) =>{
+    const {email} = req.body
+    try {
+        if(!email) return sendErrorResponse(res, 400, "Please provide user email")
+        
+            const user = await prisma.user.findUnique({where:{
+                email: email
+            }})
+
+            if(!user) return sendErrorResponse(res, 400, "User not found")
+            
+                // GenerateToken
+                const rPasswordToken = await prisma.token.create({data:{
+                    token: await GenToken(),
+                    userId: user.id,
+                    type: "PasswordReset",
+                    tokenExpires: new Date(Date.now() + 60*60*1000)
+                }})
+
+            // Send Passwor reset email
+            SendPasswordResetEmail(user.email, rPasswordToken.token)
+
+            res.status(200).json({message: "A password reset email has been sent to your registerd email."})
+        
+    } catch (error) {
+        console.log('Error in ReqResetPassword ', error)
+        sendErrorResponse(res, 500, "Internal server error")
+    }
+}
+
+export const ResetPassword = async (req, res) => {
+    const { token } = req.query
+    const { newPassword } = req.body
+    try {
+        if (!token) return sendErrorResponse(res, 400, "Token is missing")
+
+        // Find Token
+        const rToken = await prisma.token.findUnique({
+            where: {
+                token: token
+            }
+        })
+        if (!rToken) return sendErrorResponse(res, 400, "No token found")
+
+        if(rToken.type != "PasswordReset") return sendErrorResponse(res, 400, "Invalid token")
+        // Fetch user
+        const user = await prisma.user.findUnique({
+            where: {
+                id: rToken.userId
+            }
+        })
+
+        if (!user) return sendErrorResponse(res, 400, "User not found")
+
+
+        // Is old password
+        const isOldPassword = await bcrypt.compare(newPassword, user.password)
+        if (isOldPassword) return sendErrorResponse(res, 400, "New password must not be same as old password")
+        if (newPassword.length < 6) return sendErrorResponse(res, 400, "New password must be at least 6 characters long")
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+        await prisma.user.update({
+            where: {
+                id: user.id
+            }, data: {
+                password: hashedPassword
+            }
+        })
+
+        await prisma.token.delete({where: {
+            id: rToken.id
+        }})
+
+        ConfirmPasswordReset(user.email)
+
+        res.status(200).json({message: "Your password has been reset"})
+
+    } catch (error) {
+        console.log("ERROR IN RESET PASSWORD CONTROLLER ", error)
         sendErrorResponse(res, 500, "Internal server error")
     }
 }
