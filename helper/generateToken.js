@@ -7,9 +7,9 @@ const GenToken = async () => {
 export default GenToken
 
 
-export const GenerateJwtToken = async (userId) => {
+export const GenerateJwtToken = async (user) => {
     try {
-        const token = jwt.sign({ userId: userId },
+        const token = jwt.sign(user,
             process.env.JWT_SECRET,
             {
                 expiresIn: "7d",

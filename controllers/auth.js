@@ -52,7 +52,7 @@ export const Register = async (req, res) => {
         })
 
         // generate jwt
-        const token = await GenerateJwtToken(newUser.id)
+        const token = await GenerateJwtToken(newUser)
         // setCookie
         res.cookie("auth-token", token, {
             httpOnly: true, // prevents client side scripting
@@ -118,7 +118,7 @@ export const Login = async (req, res) => {
             return res.status(200).json({ message: "A verification email has been sent to your registered email. Please verify" })
         }
 
-        const jwtToken = await GenerateJwtToken(user.id)
+        const jwtToken = await GenerateJwtToken(user)
 
         // setCookie
         res.cookie("auth-token", jwtToken, {
@@ -198,7 +198,7 @@ export const VerifyAccount = async (req, res) => {
 }
 
 export const ChangePassword = async (req, res) => {
-    const userId = req.user
+    const {id: userId} = req.user
     const { currentPassword, newPassword } = req.body
     try {
         // Returns error if both fields are missing
