@@ -56,7 +56,7 @@ model Product {
   price       Float
   discount    Int      @default(0)
   stock       Int      @default(0)
-  catrgory    Category
+  category    Category
   images      String[]
   Seller      User     @relation(fields: [sellerId], references: [id])
   sellerId    String
