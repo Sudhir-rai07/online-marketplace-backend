@@ -19,7 +19,7 @@ import sellerRoutes from './routes/seller.js'
 import { protectSellerRoute } from './middleware/ProtectSeller.js'
 import { ProtectRoute } from './middleware/protectRoute.js'
 app.use('/api/auth/', authRoutes )
-app.use('/api/user/seller/',ProtectRoute, protectSellerRoute, sellerRoutes )
+app.use('/api/products/',ProtectRoute, protectSellerRoute, sellerRoutes )
 
 // Home Route
 app.get("/", (req, res)=>{

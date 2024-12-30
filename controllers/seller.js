@@ -43,3 +43,29 @@ try {
 }
 
 
+export const DeletelProduct = async (req, res) =>{
+    const {id: productId} = req.params
+    const {id: userId} = req.user
+    try {
+        if (!productId) return sendErrorResponse(res, 400, "Product id is missing")
+        
+        // Find Product
+        const product = await prisma.product.findUnique({where:{
+            id: productId
+        }})
+        if(!product) return sendErrorResponse(res, 400, "Product not found")
+        
+        // Verify User
+        if(product.sellerId !== userId) return sendErrorResponse(res, 401, "You are not authorized to perform this action")
+        // Delete product
+        await prisma.product.delete({where:{
+            id: productId
+        }})
+        // Send Response
+        res.status(200).json({message: `Product ${productId} deleted`})
+    } catch (error) {
+        console.log("ERROR IN DELETE PRODUCT CONTROLLER ", error)
+        sendErrorResponse(res, 500, "Internal server error")
+    }
+}
+
