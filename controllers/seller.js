@@ -69,3 +69,6 @@ export const DeletelProduct = async (req, res) =>{
     }
 }
 
+export const UpdateProduct = async (req, res) => {
+    const {} = req.body
+}
