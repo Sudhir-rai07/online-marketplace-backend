@@ -24,8 +24,8 @@ import sellerRoutes from './routes/seller.js'
 import buyerRoutes from './routes/buyer.js'
 import { protectBuyerRoute } from './middleware/ProtectBuyer.js'
 app.use('/api/auth/', authRoutes )
-app.use('/api/s/products/',ProtectRoute, protectSellerRoute, sellerRoutes )
-app.use('/api/b/products/',ProtectRoute, protectBuyerRoute, buyerRoutes )
+app.use('/api/seller/products/',ProtectRoute, protectSellerRoute, sellerRoutes )
+// app.use('/api/b/products/',ProtectRoute, protectBuyerRoute, buyerRoutes )
 
 // Home Route
 app.get("/", async(req, res)=>{

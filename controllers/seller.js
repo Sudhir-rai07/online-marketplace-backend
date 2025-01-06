@@ -70,5 +70,40 @@ export const DeletelProduct = async (req, res) =>{
 }
 
 export const UpdateProduct = async (req, res) => {
-    const {} = req.body
+    const {
+        name, 
+        description, 
+        price,
+        discount,
+        stock
+    } = req.body
+
+    const {id: prodId} = req.params
+
+
+    try {
+        if(!name&&!description&&!price&&!discount&&!stock){
+            return sendErrorResponse(res, 400, "Please provide required data")
+        }
+
+        const product = await prisma.product.findUnique({where:{
+            id:prodId
+        }})
+
+        if(!product) return sendErrorResponse(res, 400, "Product not found")
+
+        await prisma.product.update({where:{id:prodId}, data:{
+            name: name || product.name,
+            description: description || product.description,
+            price: price || product.price,
+            stock: stock || product.stock,
+            discount: discount || product.discount
+        }})
+
+        res.status(200).json({message:"Product updated"})
+        
+    } catch (error) {
+        console.log("Error in UpdateProduct Controller ", error)
+        sendErrorResponse(res, 500, "Internal Server error")
+    }
 }
