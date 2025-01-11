@@ -1,11 +1,22 @@
 import sendErrorResponse from "../helper/response.js";
-import { PrismaClient } from "@prisma/client";
+import {prisma} from '../index.js'
 
-const prisma = new PrismaClient()
-/**
- * TODO: For seller, Add product, delete product, update product, get-all-products, view-orders, update-orders,
- */
 
+// Get All Products --> GET
+export const GetAllProducts = async (req, res) => {
+    const {id: userId} = req.user
+    try {
+        const products = await prisma.product.findMany({where: {
+            sellerId: userId
+        }})
+        res.status(200).json(products)
+    } catch (error) {
+        console.log("Error in GetAllProducts Controller ", error)
+        sendErrorResponse(res, 500, "Internal server error")
+    }
+}
+
+// Add new product --> POST
 export const AddProduct = async (req, res) => {
     const { id: userId } = req.user
     const { 
@@ -42,7 +53,7 @@ try {
 }
 }
 
-
+// Delete Products --> DELETE
 export const DeletelProduct = async (req, res) =>{
     const {id: productId} = req.params
     const {id: userId} = req.user
@@ -69,6 +80,7 @@ export const DeletelProduct = async (req, res) =>{
     }
 }
 
+// Update Product --> PUT
 export const UpdateProduct = async (req, res) => {
     const {
         name, 

@@ -2,48 +2,43 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
-import sendErrorResponse from './helper/response.js'
+
 import { protectSellerRoute } from './middleware/ProtectSeller.js'
 import { ProtectRoute } from './middleware/protectRoute.js'
 import { PrismaClient } from '@prisma/client'
 
-dotenv.config()
+dotenv.config() // To use .env file
 
-const prisma = new PrismaClient()
-const app = express()
-const PORT = process.env.PORT || 5500
+export const prisma = new PrismaClient() // Prisma Client
+const app = express() // Express App
+const PORT = process.env.PORT || 5000 // Port
 
 // Middlewares
-app.use(express.json())
-app.use(cookieParser())
-app.use(cors())
+app.use(express.json()) // To parse JSON data
+app.use(cookieParser()) // To parse cookies
+app.use(cors()) // To enable cors
 
 // routes middleware
-import authRoutes from './routes/auth.js'
-import sellerRoutes from './routes/seller.js'
-import buyerRoutes from './routes/buyer.js'
-import { protectBuyerRoute } from './middleware/ProtectBuyer.js'
-app.use('/api/auth/', authRoutes )
-app.use('/api/seller/products/',ProtectRoute, protectSellerRoute, sellerRoutes )
-// app.use('/api/b/products/',ProtectRoute, protectBuyerRoute, buyerRoutes )
+import authRoutes from './routes/auth.js' // Importing auth routes
+import sellerRoutes from './routes/seller.js' // Importing seller routes
+import orderRoutes from './routes/order.js' // Importing order routes
+import productRoutes from './routes/products.js' // Importing product routes
+
+app.use('/api/auth/', authRoutes) // Using auth routes --> Register, Login, Verify Account, Change Password, Reset Password
+app.use('/api/seller/products/', ProtectRoute, protectSellerRoute, sellerRoutes) // Using seller routes --> Add, Delete, Update, Get All Products
+app.use('/api/orders/', ProtectRoute, protectSellerRoute, orderRoutes) // Using order routes
+
+app.use('/api/products', productRoutes) // Using product routes
 
 // Home Route
-app.get("/", async(req, res)=>{
-    try {
-        const products = await prisma.product.findMany({})
-        res.status(200).json(products)
-    } catch (error) {
-        console.log("Error in Home Route", error)
-        sendErrorResponse(res, 500, "Internal server Error")
-    }
+app.get('/', async (req, res) => {
+  res.json('Welcome to E-commerce API')
 })
 
-
-// INVALID ROUTE
-app.get("*", (req, res)=>{
-    res.send("Not a valid route")
+// Invalid Route
+app.get('*', (req, res) => {
+  res.send('Not a valid route')
 })
 
-
-// Listen server
-app.listen(PORT, ()=> console.log(`Server is listening in port ${PORT}`))
+// Server
+app.listen(PORT, () => console.log(`Server is listening in port ${PORT}`))

@@ -3,15 +3,15 @@ import { ChangePassword, Login, Register, ReqResetPassword, ResetPassword, Verif
 import { ProtectRoute } from "../middleware/protectRoute.js";
 
 
-const router = Router()
+const router = Router() // Router
 
-// AUTH
-router.post("/register", Register)
-router.get("/login", Login)
-router.patch("/verify-account", VerifyAccount)
-router.put("/password/change", ProtectRoute, ChangePassword)
-router.get("/password/reset", ReqResetPassword) 
-router.patch("/password/reset", ResetPassword)
+//auth Routes
+router.post("/register", Register) // Register
+router.get("/login", Login) // Login
+router.patch("/verify-account", VerifyAccount) // Verify Account
+router.put("/password/change", ProtectRoute, ChangePassword) // Change Password
+router.get("/password/reset", ReqResetPassword)  // Request Reset Password
+router.patch("/password/reset", ResetPassword) // Reset Password
 
 
 export default router
