@@ -25,8 +25,8 @@ import orderRoutes from './routes/order.js' // Importing order routes
 import productRoutes from './routes/products.js' // Importing product routes
 
 app.use('/api/auth/', authRoutes) // Using auth routes --> Register, Login, Verify Account, Change Password, Reset Password
-app.use('/api/seller/products/', ProtectRoute, protectSellerRoute, sellerRoutes) // Using seller routes --> Add, Delete, Update, Get All Products
-app.use('/api/orders/', ProtectRoute, protectSellerRoute, orderRoutes) // Using order routes
+app.use('/api/user/products/', ProtectRoute, protectSellerRoute, sellerRoutes) // Using seller routes --> Add, Delete, Update, Get All Products
+app.use('/api/orders/', ProtectRoute, orderRoutes) // Using order routes
 
 app.use('/api/products', productRoutes) // Using product routes
 
