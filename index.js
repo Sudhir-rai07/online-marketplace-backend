@@ -18,16 +18,16 @@ app.use(cookieParser()) // To parse cookies
 app.use(cors()) // To enable cors
 
 // routes middleware
-import authRoutes from './routes/auth.js' // Importing auth routes
-import sellerRoutes from './routes/seller.js' // Importing seller routes
+import authRoutes from './routes/auth.js' 
+import sellerRoutes from './routes/seller.js' 
 import seller from './middleware/ProtectSeller.js'
 import buyer from './middleware/ProtectBuyer.js'
-import productRoutes from './routes/products.js' // Importing product routes
+import productRoutes from './routes/products.js' 
 
-app.use('/api/auth/', authRoutes) // Using auth routes --> Register, Login, Verify Account, Change Password, Reset Password
-app.use('/api/user/seller/products/', ProtectRoute, seller, sellerRoutes) // Using seller routes --> Add, Delete, Update, Get All Products
-// app.use('/api/user/buyer/', ProtectRoute, buyer, buyerRoutes) // Using seller routes --> Add, Delete, Update, Get All Products
-app.use('/api/products', productRoutes) // Using product routes
+app.use('/api/auth/', authRoutes) 
+app.use('/api/user/seller/products/', ProtectRoute, seller, sellerRoutes)
+app.use('/api/products', productRoutes)
+// app.use('/api/user/buyer/', ProtectRoute, buyer, buyerRoutes) 
 
 // Home Route
 app.get('/', async (req, res) => {

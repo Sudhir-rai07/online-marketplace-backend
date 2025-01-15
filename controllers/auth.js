@@ -8,10 +8,10 @@ const prisma = new PrismaClient()
 
 // Registers a user in database and returns a jwt token
 export const Register = async (req, res) => {
-    const { username, email, password } = req.body
+    const { username, email, password, role } = req.body
     try {
         // Check for user credentials
-        if (!email || !username || !password) {
+        if (!email || !username || !password || !role) {
             return sendErrorResponse(res, 400, "Please fill all fields")
         }
 
@@ -47,7 +47,8 @@ export const Register = async (req, res) => {
             data: {
                 email: email,
                 username: username,
-                password: hashedPassword
+                password: hashedPassword,
+                role: role
             }
         })
 

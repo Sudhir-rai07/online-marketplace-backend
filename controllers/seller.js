@@ -32,7 +32,7 @@ export const AddProduct = async (req, res) => {
 try {
         if(!name || !description || !price || !discount || !stock || !category || !images) return sendErrorResponse(res, 400, "Please provide proper data from products")
     
-        await prisma.product.create({data: {
+        const product = await prisma.product.create({data: {
             name,
             description,
             price,
@@ -44,7 +44,7 @@ try {
     
         }})
     
-        res.status(200).json({message: "Product added"})
+        res.status(200).json({message: "Product added", product})
         
     
 } catch (error) {

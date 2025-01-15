@@ -1,20 +1,20 @@
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('Buyer', 'Seller');
+CREATE TYPE "Role" AS ENUM ('buyer', 'seller');
 
 -- CreateEnum
-CREATE TYPE "TokenType" AS ENUM ('AccountVerification', 'PasswordReset');
+CREATE TYPE "TokenType" AS ENUM ('accountVerification', 'passwordReset');
 
 -- CreateEnum
-CREATE TYPE "Category" AS ENUM ('Faishon', 'Electronics', 'HomeAppliances', 'Beauty', 'Sports', 'Books', 'Toys', 'Groceries', 'Automotive', 'Furniture');
+CREATE TYPE "Category" AS ENUM ('faishon', 'electronics', 'eomeAppliances', 'beauty', 'sports', 'books', 'toys', 'groceries', 'automotive', 'furniture');
 
 -- CreateEnum
-CREATE TYPE "OrderStatus" AS ENUM ('Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled');
+CREATE TYPE "OrderStatus" AS ENUM ('pending', 'processing', 'confirmed', 'shipped', 'delivered', 'cancelled');
 
 -- CreateEnum
 CREATE TYPE "PaymentMethod" AS ENUM ('UPI', 'Card', 'COD');
 
 -- CreateEnum
-CREATE TYPE "PaymentStatus" AS ENUM ('Pending', 'Failed', 'Success');
+CREATE TYPE "PaymentStatus" AS ENUM ('pending', 'failed', 'success');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -24,7 +24,7 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "mobile" BIGINT,
     "profilePic" TEXT,
-    "role" "Role" NOT NULL DEFAULT 'Buyer',
+    "role" "Role" NOT NULL DEFAULT 'buyer',
     "verified" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE "Product" (
     "price" DOUBLE PRECISION NOT NULL,
     "discount" INTEGER NOT NULL DEFAULT 0,
     "stock" INTEGER NOT NULL DEFAULT 0,
-    "catrgory" "Category" NOT NULL,
+    "category" "Category" NOT NULL,
     "images" TEXT[],
     "sellerId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -66,11 +66,15 @@ CREATE TABLE "Product" (
 CREATE TABLE "Order" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "sellerId" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
     "address" TEXT NOT NULL,
-    "status" "OrderStatus" NOT NULL,
+    "status" "OrderStatus" NOT NULL DEFAULT 'pending',
+    "quantity" INTEGER NOT NULL DEFAULT 1,
+    "shippingCharge" DOUBLE PRECISION NOT NULL DEFAULT 1,
+    "total" DOUBLE PRECISION NOT NULL,
     "paymentMethod" "PaymentMethod" NOT NULL DEFAULT 'UPI',
-    "paymentStatus" "PaymentStatus" NOT NULL DEFAULT 'Pending',
+    "paymentStatus" "PaymentStatus" NOT NULL DEFAULT 'pending',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -100,6 +104,9 @@ ALTER TABLE "Product" ADD CONSTRAINT "Product_sellerId_fkey" FOREIGN KEY ("selle
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_sellerId_fkey" FOREIGN KEY ("sellerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

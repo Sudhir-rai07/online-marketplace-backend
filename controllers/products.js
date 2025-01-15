@@ -30,16 +30,34 @@ export const GetProduct = async (req, res) => {
   }
 }
 
+// Get Productz By category
+export const GetProductsByCategory = async (req, res) => {
+  const { category } = req.params
+  if (!category) {
+    sendErrorResponse(res, 400, 'Provide category name')
+    return
+  }
+
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        category: {
+          equals: category,
+        },
+      },
+    })
+
+    res.status(200).json(products)
+  } catch (error) {
+    console.log('Error in getProductsByCateogory ', error)
+    sendErrorResponse(res, 500, 'Internal server error')
+  }
+}
+
 // Buy a product
 export const BuyProduct = async (req, res) => {
   const { id: productId } = req.params
-  const {
-    quantity,
-    address,
-    status,
-    paymentMethod,
-    paymentStatus,
-  } = req.body
+  const { quantity, address, status, paymentMethod, paymentStatus } = req.body
 
   try {
     // check if product exists
@@ -60,7 +78,9 @@ export const BuyProduct = async (req, res) => {
         productId: product.id,
         address,
         status,
-        total: (quantity * product.price) -((quantity*product.price)/product.discount),
+        total:
+          quantity * product.price -
+          (quantity * product.price) / product.discount,
         paymentMethod,
         paymentStatus,
       },
