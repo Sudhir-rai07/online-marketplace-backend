@@ -315,4 +315,19 @@ export const ResetPassword = async (req, res) => {
         console.log("ERROR IN RESET PASSWORD CONTROLLER ", error)
         sendErrorResponse(res, 500, "Internal server error")
     }
+
+}
+
+export const me = async (req, res) =>{
+    const {id} = req.user
+    try {
+            const user = await prisma.user.findUnique({where:{
+                id
+            }})
+
+            res.status(200).json(user)
+    } catch (error) {
+       console.log("Error in GetME route", error) 
+       sendErrorResponse(res, 500, "Internal server error")
+    }
 }

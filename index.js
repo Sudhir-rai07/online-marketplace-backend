@@ -3,7 +3,6 @@ import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 
-import { protectSellerRoute } from './middleware/ProtectSeller.js'
 import { ProtectRoute } from './middleware/protectRoute.js'
 import { PrismaClient } from '@prisma/client'
 
@@ -21,13 +20,13 @@ app.use(cors()) // To enable cors
 // routes middleware
 import authRoutes from './routes/auth.js' // Importing auth routes
 import sellerRoutes from './routes/seller.js' // Importing seller routes
-import orderRoutes from './routes/order.js' // Importing order routes
+import seller from './middleware/ProtectSeller.js'
+import buyer from './middleware/ProtectBuyer.js'
 import productRoutes from './routes/products.js' // Importing product routes
 
 app.use('/api/auth/', authRoutes) // Using auth routes --> Register, Login, Verify Account, Change Password, Reset Password
-app.use('/api/user/products/', ProtectRoute, protectSellerRoute, sellerRoutes) // Using seller routes --> Add, Delete, Update, Get All Products
-app.use('/api/orders/', ProtectRoute, orderRoutes) // Using order routes
-
+app.use('/api/user/seller/products/', ProtectRoute, seller, sellerRoutes) // Using seller routes --> Add, Delete, Update, Get All Products
+// app.use('/api/user/buyer/', ProtectRoute, buyer, buyerRoutes) // Using seller routes --> Add, Delete, Update, Get All Products
 app.use('/api/products', productRoutes) // Using product routes
 
 // Home Route

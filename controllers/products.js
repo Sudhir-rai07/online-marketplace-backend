@@ -37,8 +37,6 @@ export const BuyProduct = async (req, res) => {
     quantity,
     address,
     status,
-    shippingCharge,
-    total,
     paymentMethod,
     paymentStatus,
   } = req.body
@@ -62,8 +60,7 @@ export const BuyProduct = async (req, res) => {
         productId: product.id,
         address,
         status,
-        shippingCharge,
-        total,
+        total: (quantity * product.price) -((quantity*product.price)/product.discount),
         paymentMethod,
         paymentStatus,
       },
