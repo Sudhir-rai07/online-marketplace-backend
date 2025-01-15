@@ -36,23 +36,78 @@ export const GetProduct = async (req, res) => {
 // Get Productz By category
 export const GetProductsByCategory = async (req, res) => {
   const { category } = req.params
+  const { sort } = req.query
   if (!category) {
     sendErrorResponse(res, 400, 'Provide category name')
     return
   }
 
+  let orderBy = {}
+
+  if (sort) {
+    if (sort === 'price_asc') {
+      orderBy = { price: 'asc' }
+    }
+    if (sort === 'price_desc') {
+      orderBy = { price: 'desc' }
+    }
+  }
+
   try {
     const products = await prisma.product.findMany({
       where: {
-        category: {
-          equals: category,
-        },
+        category: { equals: category },
       },
+      orderBy: orderBy,
     })
 
     res.status(200).json(products)
   } catch (error) {
     console.log('Error in getProductsByCateogory ', error)
+    sendErrorResponse(res, 500, 'Internal server error')
+  }
+}
+
+//Search product
+export const SearchProduct = async (req, res) => {
+  const { query, sort } = req.query
+
+  if (!query && !sort) {
+    sendErrorResponse(res, 400, 'Please provide query parameters')
+    return
+  }
+
+  let where = {}
+  let orderBy = {}
+
+  if (query) {
+    where = {
+      OR: [
+        { name: { contains: query, mode: 'insensitive' } },
+        { description: { contains: query, mode: 'insensitive' } },
+      ],
+    }
+  }
+
+  if (sort) {
+    if (sort === 'price_asc') {
+      orderBy = { price: 'asc' }
+    }
+
+    if (sort === 'price_desc') {
+      orderBy = { price: 'desc' }
+    }
+  }
+
+  try {
+    const products = await prisma.product.findMany({
+      where:where,
+      orderBy:orderBy
+    })
+
+    res.status(200).json(products)
+  } catch (error) {
+    console.log('Error in SearchProduct ', error)
     sendErrorResponse(res, 500, 'Internal server error')
   }
 }
@@ -118,30 +173,6 @@ export const BuyProduct = async (req, res) => {
     res.status(200).json(resData)
   } catch (error) {
     console.log('Error in BuyProduct Controller ', error)
-    sendErrorResponse(res, 500, 'Internal server error')
-  }
-}
-
-//Search product
-export const SearchProduct = async (req, res) => {
-  const {query} = req.query
-
-  if(!query) {
-    sendErrorResponse(res, 400, "Please provide query parameter")
-    return
-  }
-
-  try {
-      const products = await prisma.product.findMany({where:{
-        OR:[
-          {name:{contains: query, mode:'insensitive'}},
-          {description: {contains:query, mode:'insensitive'}}
-        ]
-      }})
-
-    res.status(200).json(products)
-  } catch (error) {
-    console.log('Error in SearchProduct ', error)
     sendErrorResponse(res, 500, 'Internal server error')
   }
 }
