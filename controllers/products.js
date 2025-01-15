@@ -22,7 +22,10 @@ export const GetProduct = async (req, res) => {
         id: productId,
       },
     })
-    if (!product) return sendErrorResponse(res, 400, 'Product not found')
+    if (!product) {
+      sendErrorResponse(res, 400, 'Product not found')
+      return
+    }
     res.status(200).json(product)
   } catch (error) {
     console.log('Error in GetProduct Controller ', error)
@@ -66,10 +69,15 @@ export const BuyProduct = async (req, res) => {
         id: productId,
       },
     })
-    if (!product) return sendErrorResponse(res, 400, 'Product not found')
+    if (!product) {
+      sendErrorResponse(res, 400, 'Product not found')
+      return
+    }
     // check if enough stock
-    if (product.stock < quantity)
-      return sendErrorResponse(res, 400, 'Not enough stock')
+    if (product.stock < quantity) {
+      sendErrorResponse(res, 400, 'Not enough stock')
+      return
+    }
 
     // create order
     const order = await prisma.order.create({
@@ -110,6 +118,30 @@ export const BuyProduct = async (req, res) => {
     res.status(200).json(resData)
   } catch (error) {
     console.log('Error in BuyProduct Controller ', error)
+    sendErrorResponse(res, 500, 'Internal server error')
+  }
+}
+
+//Search product
+export const SearchProduct = async (req, res) => {
+  const {query} = req.query
+
+  if(!query) {
+    sendErrorResponse(res, 400, "Please provide query parameter")
+    return
+  }
+
+  try {
+      const products = await prisma.product.findMany({where:{
+        OR:[
+          {name:{contains: query, mode:'insensitive'}},
+          {description: {contains:query, mode:'insensitive'}}
+        ]
+      }})
+
+    res.status(200).json(products)
+  } catch (error) {
+    console.log('Error in SearchProduct ', error)
     sendErrorResponse(res, 500, 'Internal server error')
   }
 }

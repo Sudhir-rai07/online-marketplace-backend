@@ -26,7 +26,7 @@ import productRoutes from './routes/products.js'
 
 app.use('/api/auth/', authRoutes) 
 app.use('/api/user/seller/products/', ProtectRoute, seller, sellerRoutes)
-app.use('/api/products', productRoutes)
+app.use('/api/products/', productRoutes)
 // app.use('/api/user/buyer/', ProtectRoute, buyer, buyerRoutes) 
 
 // Home Route

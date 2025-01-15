@@ -1,16 +1,13 @@
 import { Router } from 'express'
-import { GetAllProducts, GetProduct, GetProductsByCategory } from '../controllers/products.js'
-import { BuyProduct } from '../controllers/products.js'
-import buyer from '../middleware/ProtectBuyer.js'
-import { ProtectRoute } from '../middleware/protectRoute.js'
+import { GetAllProducts, GetProduct, GetProductsByCategory, SearchProduct } from '../controllers/products.js'
 
 const router = Router()
 
 router.get('/', GetAllProducts) // Get All Products
+router.get('/search', SearchProduct) // Search a product
 router.get('/:id', GetProduct) // Get Product by id
-router.get("/category/:category", GetProductsByCategory)
-router.get("/serach", searchProduct)
+router.get('/category/:category', GetProductsByCategory)
 
-router.post('/buy/:id',ProtectRoute, buyer, BuyProduct) // Buy a product
+// router.post('/buy/:id',ProtectRoute, buyer, BuyProduct) // Buy a product
 
 export default router
