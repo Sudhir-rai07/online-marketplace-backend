@@ -1,4 +1,5 @@
 import sendErrorResponse from '../helper/response.js'
+import { stripe } from '../helper/stripe.js'
 import { prisma } from '../index.js'
 
 // Get all products
@@ -101,8 +102,8 @@ export const SearchProduct = async (req, res) => {
 
   try {
     const products = await prisma.product.findMany({
-      where:where,
-      orderBy:orderBy
+      where: where,
+      orderBy: orderBy,
     })
 
     res.status(200).json(products)
@@ -115,7 +116,7 @@ export const SearchProduct = async (req, res) => {
 // Buy a product
 export const BuyProduct = async (req, res) => {
   const { id: productId } = req.params
-  const { quantity, address, status, paymentMethod, paymentStatus } = req.body
+  const { quantity, address } = req.body
 
   try {
     // check if product exists
@@ -134,45 +135,111 @@ export const BuyProduct = async (req, res) => {
       return
     }
 
+    const discount = (product.price * product.discount) / 100
+    const finalPrice = product.price - discount
+
+
     // create order
     const order = await prisma.order.create({
       data: {
         userId: req.user.id,
+        sellerId: product.sellerId,
+        productId: productId,
+        address: address,
+        total: (finalPrice * quantity) + 1,
+        quantity: quantity,
+        paymentStatus: 'Pending',
+        status: 'Pending',
+      },
+    })
+
+    let session;
+    try {
+      // Create payment intent
+     session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'inr',
+            product_data: { name: product.name },
+            unit_amount: (finalPrice + order.shippingCharge) * 100,
+          },
+          quantity: quantity,
+        },
+      ],
+      mode: 'payment',
+      metadata: {
+        orderId: order.id,
         productId: product.id,
-        address,
-        status,
-        total:
-          quantity * product.price -
-          (quantity * product.price) / product.discount,
-        paymentMethod,
-        paymentStatus,
       },
+      success_url: `${process.env.CLIENT_URL}/payment/success`,
+      cancel_url: `${process.env.CLIENT_URL}/payment/cancel`,
     })
 
-    // update product stock
-    await prisma.product.update({
-      where: {
-        id: productId,
-      },
-      data: {
-        stock: product.stock - quantity,
-      },
-    })
-
-    const resData = {
-      message: 'Product bought successfully',
-      orderId: order.id,
-      product: product.name,
-      quantity: quantity,
-      total: total,
-      payment: {
-        method: paymentMethod,
-        status: paymentStatus,
-      },
+    } catch (stripeError) {
+      console.error('Error creating Stripe session:', stripeError);
+      sendErrorResponse(res, 500, 'Failed to initiate payment');
+      return;
     }
-    res.status(200).json(resData)
+
+    res.status(200).json({
+      checkout_url: session.url,
+      session_id: session.id,
+    })
   } catch (error) {
     console.log('Error in BuyProduct Controller ', error)
+    sendErrorResponse(res, 500, 'Internal server error')
+  }
+}
+
+// Update order status
+export const UpdateOrderStatus = async (req, res) => {
+  //Set SessionId
+  const { sessionId } = req.params
+
+  try {
+    // check id session is success
+    const session = await stripe.checkout.sessions.retrieve(sessionId)
+    if (session.payment_status === 'paid') {
+      const metadata = session.metadata
+      const orderId = metadata.orderId
+      const productId = metadata.productId
+
+      //make order
+      const order = await prisma.order.update({
+        where: {
+          id: orderId,
+        },
+        data:{
+          status: 'Confirmed',
+          paymentStatus: 'Success',
+          stripeSessionId: sessionId
+        },
+      })
+
+      //Get product
+      const product = await prisma.product.findUnique({
+        where: { id: productId },
+      })
+
+      // Update product stock
+      await prisma.product.update({
+        where: {
+          id: productId,
+        },
+        data: {
+          stock: product.stock - order.quantity,
+        },
+      })
+
+      res.status(200).json({ message: 'Order Confirmed', order })
+      return
+    }
+
+    res.status(400).json({ error: 'Payment was unsuccessfull' })
+  } catch (error) {
+    console.log('Error in Checkout Controller ', error)
     sendErrorResponse(res, 500, 'Internal server error')
   }
 }

@@ -93,8 +93,9 @@ model Order {
   quantity       Int           @default(1)
   shippingCharge Float         @default(1)
   total          Float
-  paymentMethod  PaymentMethod @default(UPI)
+  paymentMethod  PaymentMethod @default(Card)
   paymentStatus  PaymentStatus @default(Pending)
+  stripeSessionId String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
