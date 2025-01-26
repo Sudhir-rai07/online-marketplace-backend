@@ -23,11 +23,12 @@ import sellerRoutes from './routes/seller.js'
 import seller from './middleware/ProtectSeller.js'
 import buyer from './middleware/ProtectBuyer.js'
 import productRoutes from './routes/products.js' 
+import buyerRoutes from './routes/buyer.js' 
 
 app.use('/api/auth/', authRoutes) 
 app.use('/api/user/seller/products/', ProtectRoute, seller, sellerRoutes)
 app.use('/api/products/', productRoutes)
-// app.use('/api/user/buyer/', ProtectRoute, buyer, buyerRoutes) 
+app.use('/api/user/buyer/', ProtectRoute, buyer, buyerRoutes) 
 
 // Home Route
 app.get('/', async (req, res) => {

@@ -2,9 +2,6 @@ import { Router } from 'express'
 import { BuyProduct, GetAllProducts, GetProduct, GetProductsByCategory, SearchProduct, UpdateOrderStatus } from '../controllers/products.js'
 import { ProtectRoute } from '../middleware/protectRoute.js'
 import buyer from '../middleware/ProtectBuyer.js'
-import { stripe } from '../helper/stripe.js'
-import { prisma } from '../index.js'
-
 
 const router = Router()
 
