@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { orders } from "../controllers/buyer.js";
+import { order, orders } from "../controllers/buyer.js";
 
 const router = Router()
 
 router.get("/orders", orders)
+router.get("/orders/:id", order)
 
 export default router
